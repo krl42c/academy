@@ -47,7 +47,7 @@ Then academy-client injects the generated *.jar* via a Maven dependency ([academ
 </dependency>
 ```
 
-Maven will generate the *.war* file via mvn compile or mvn install.
+Maven will generate the *.war* file via mvn package or mvn install.
 
 
 ---
