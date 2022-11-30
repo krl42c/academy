@@ -14,23 +14,24 @@ import java.net.URL;
 import java.util.ArrayList;
 
 public class Main {
-	public static void main(String args[]) throws MalformedURLException {
+	public static void main(String args[]) throws MalformedURLException, UserNotFoundException {
 		
 		ClientService es = new ClientService(new URL("http://localhost:8080/hello/hello?wsdl"),
 				new QName("http://academy/", "HelloImplService"));
-		Hello h = es.getHelloPort();
+		Hello clientPort = es.getHelloPort();
 		
-		// Test all endpoints
 		
-		User user = h.createUser(2, "Juan");
-		User[] userList = h.getUsers();
+		clientPort.createUser(2, "Juan");
+		clientPort.createUser(3, "Karol");
 		
-		try {
-			h.changeUserName(2, "Pedro");
-			h.deleteUser(2);
-		} catch (UserNotFoundException e) {
-			e.printStackTrace();
+		User[] userList = clientPort.getUsers();
+		
+		for(User u : userList) {
+			System.out.println("ID: " + u.getId() + " | Name: " + u.getName());
 		}
 		
+		System.out.println(clientPort.changeUserName(2, "Pedro"));
+		System.out.println(clientPort.deleteUser(2));
+	
 	}
 }
