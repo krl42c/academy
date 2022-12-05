@@ -20,9 +20,7 @@ Submodule declarations in [pom.xml](pom.xml) (parent):
 ```
 ## Build system
 
-The web service builds a *.war* file that deploys to Tomcat (or any servlet server). It also generates a *.jar* file so academy-client can access it's classes (academy-client needs the service interface and user model in order to execute operations). 
-
-This is achieved through the maven-war plugin by specifying the *attachClasses* parameter ([academy-webservice/pom.xml](academy-webservice/pom.xml)):
+The web service builds a *.war* file that deploys to Tomcat (or any servlet server). The classes needed for the client are generated through the *jax-ws* maven plugin.
 
 ```xml
 <plugin>
@@ -31,24 +29,33 @@ This is achieved through the maven-war plugin by specifying the *attachClasses* 
 	<version>3.3.1</version>
 	<configuration>
 		<failOnMissingWebXml>true</failOnMissingWebXml>
-		<attachClasses>true</attachClasses>
 	</configuration>
 </plugin>
-
 ```
 
-Then academy-client injects the generated *.jar* via a Maven dependency ([academy-client/pom.xml](academy-client/pom.xml)):
 ```xml
-<dependency>
-  	<groupId>academy-parent</groupId>
-	<artifactId>academy-webservice</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<classifier>classes</classifier>
-</dependency>
+<plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>jaxws-maven-plugin</artifactId>
+	<version>2.6</version>
+	<executions>
+		<execution>
+			<goals>
+				<goal>wsimport</goal>
+			</goals>
+		</execution>
+	</executions>
+	<configuration>
+	<wsdlUrls>
+		<wsdlUrl>http://localhost:8080/hello/hello?wsdl</wsdlUrl>
+	</wsdlUrls>
+	<packageName>academy.client</packageName>
+	<sourceDestDir>
+        ${project.build.directory}/generated-sources/
+    </sourceDestDir>
+	</configuration>
+</plugin>
 ```
-
-Maven will generate the *.war* file via mvn package or mvn install.
-
 
 ---
 ## WebService
@@ -87,21 +94,4 @@ Exception handling
 
 ## Client
 
-The client service is implemented in [ClientService.java](academy-client/src/main/java/academyclient/ClientService.java)
-
-It is configured to retrieve the service information from http://localhost:8080/hello/hello?wsdl through the following notation:
-
-```java
-@WebServiceClient(targetNamespace = "http://localhost:8080/", wsdlLocation = "http://localhost:8080/hello/hello?wsdl", name = "HelloImplService")
-```
-
-It performs all the operations that are defined in the service via it's [Main](academy-client/src/main/java/academyclient/Main.java) class.
-
-Client generation example:
-
-```java
-ClientService es = new ClientService(new URL("http://localhost:8080/hello/hello?wsdl"), new QName("http://academy/", "HelloImplService"));
-
-Hello h = es.getHelloPort();
-
-```
+The client holds all the needed classes in /target/generated-sources as specified in the jax-ws plugin configuration.
